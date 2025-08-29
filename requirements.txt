@@ -1,0 +1,6 @@
+torch>=2.3
+torchvision>=0.18
+torchdata>=0.7
+webdataset>=0.2
+tqdm
+pyyaml
