@@ -75,15 +75,9 @@ def build_dataloaders(cfg):
         train = make_imagenet_wds(cfg["dataset"]["train_urls"], "train", img_size, bs, nw)
         val   = make_imagenet_wds(cfg["dataset"]["val_urls"],   "val",   img_size, bs, nw)
         return train, val, None  # class count handled by cfg.model.num_classes
-
-    if name == "imagenet":
-        from datasets.imagenet_fs import make_imagenet_fs
-        root = os.path.join(cfg["dataset"]["root"], "imagenet")
-        train_ds = make_imagenet_fs(root, "train", img_size)
-        val_ds   = make_imagenet_fs(root, "val",   img_size)
-        num_classes = 1000
-    elif name == "food101":
-        from datasets.food101_fs import make_food101_fs
+    
+    if name == "food101":
+        from datasets.Food101_fs import make_food101_fs
         root = cfg["dataset"]["root"]
         train_ds = make_food101_fs(root, "train", img_size)
         val_ds   = make_food101_fs(root, "val",   img_size)
