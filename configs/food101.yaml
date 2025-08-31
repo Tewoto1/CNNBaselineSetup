@@ -1,0 +1,43 @@
+# configs/food101.yaml
+
+seed: 42
+
+dataset:
+  name: food101 # ["food101", "imagenet"]
+  root: /data # Food-101 will auto-download here
+  img_size: 224
+  batch_size: 256
+  workers: 8
+  wds: false # set true if you convert to WebDataset + host
+  # train_urls: ""        # used when wds=true
+  # val_urls: ""          # used when wds=true
+
+model:
+  pretrained: true # start from ImageNet weights
+  num_classes: 101
+  freeze_up_to: "none" # "none","conv1","layer1","layer2","layer3","all"
+
+loss:
+  name: label_smoothing_ce
+  smoothing: 0.1
+
+optimizer:
+  name: sgd
+  lr: 0.03 # for backbone
+  head_lr: 0.06 # faster for freshly init head (optional)
+  momentum: 0.9
+  weight_decay: 0.0001
+  nesterov: true
+
+scheduler:
+  name: step
+  milestones: [10, 15]
+  gamma: 0.1
+
+train:
+  epochs: 20
+  amp: true
+  save_dir: ckpts/food101
+  log_interval: 50
+  eval_interval: 1
+  # resume: ckpts/food101/last.pt
