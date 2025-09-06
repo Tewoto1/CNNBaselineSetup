@@ -4,7 +4,7 @@ seed: 42
 
 dataset:
   name: food101 # ["food101", "imagenet"]
-  root: /data # Food-101 will auto-download here
+  root: ./data # Food-101 will auto-download here
   img_size: 224
   batch_size: 256
   workers: 8
@@ -37,7 +37,7 @@ scheduler:
 train:
   epochs: 20
   amp: true
-  save_dir: ckpts/food101
+  save_dir: ./ckpts/food101
   log_interval: 50
   eval_interval: 1
-  # resume: ckpts/food101/last.pt
+  # resume: ./ckpts/food101/last.pt
