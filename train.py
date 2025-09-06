@@ -1,5 +1,6 @@
 # train.py
 import os, argparse, yaml, time, copy, math
+from tqdm.auto import tqdm
 from pathlib import Path
 
 import torch
@@ -79,8 +80,8 @@ def build_dataloaders(cfg):
     if name == "food101":
         from datasets.Food101_fs import make_food101_fs
         root = cfg["dataset"]["root"]
-        train_ds = make_food101_fs(root, "train", img_size)
-        val_ds   = make_food101_fs(root, "val",   img_size)
+        train_ds = make_food101_fs(root="./data", split = "train", img_size = img_size)
+        val_ds   = make_food101_fs(root="./data", split = "val",   img_size = img_size)
         num_classes = 101
     else:
         raise ValueError(f"Unknown dataset {name}")
@@ -146,6 +147,8 @@ def train_one_epoch(model, criterion, opt, dl, device, scaler, log_interval=50):
     running = 0.0
     seen = 0
     start = time.time()
+
+    pbar = tqdm(enumerate(dl), total=len(dl), desc="train", ncols=100)
     for i, batch in enumerate(dl):
         if isinstance(batch, dict): x, y = batch["jpg"], batch["cls"]
         else:
@@ -165,8 +168,10 @@ def train_one_epoch(model, criterion, opt, dl, device, scaler, log_interval=50):
             scaler.update()
         running += loss.item() * y.size(0)
         seen += y.size(0)
-        if (i+1) % log_interval == 0:
-            print(f"  iter {i+1}/{len(dl)} | loss {running/seen:.4f} | fps {seen/(time.time()-start):.1f}")
+
+        if (i + 1) % log_interval == 0 or (i + 1) == len(dl):
+            fps = seen / max(1e-6, (time.time() - start))
+            pbar.set_postfix_str(f"loss {running/seen:.4f} | {fps:.0f} samp/s")
     return running / max(1, seen)
 
 @torch.no_grad()
@@ -176,6 +181,8 @@ def evaluate(model, criterion, dl, device):
     loss_sum = 0.0
     correct1 = 0.0
     correct5 = 0.0
+
+    pbar = tqdm(dl, desc="val", ncols=100)
     for batch in dl:
         if isinstance(batch, dict): x, y = batch["jpg"], batch["cls"]
         else:
@@ -188,6 +195,9 @@ def evaluate(model, criterion, dl, device):
         c1, c5 = topk_correct(logits, y, ks=(1,5))
         correct1 += c1; correct5 += c5
         total += y.size(0)
+
+        pbar.set_postfix_str(f"loss {loss_sum/max(1,total):.4f} | top1 {100*correct1/max(1,total):.2f}% | top5 {100*correct5/max(1,total):.2f}%")
+        
     return loss_sum/total, (correct1/total)*100.0, (correct5/total)*100.0
 
 def save_ckpt(state, path):
