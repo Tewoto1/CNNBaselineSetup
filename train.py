@@ -196,7 +196,7 @@ def save_ckpt(state, path):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("-c","--config", default="configs/default.yaml")
+    ap.add_argument("-c","--config", default="configs/food101.yaml")
     # Handy overrides
     ap.add_argument("--epochs", type=int)
     ap.add_argument("--batch_size", type=int)
